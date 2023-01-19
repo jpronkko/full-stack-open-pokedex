@@ -10,12 +10,11 @@ on:
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 jobs:
-  simple_deployment_pipeline:
+  simple_build_pipeline:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
-    - uses: superfly/flyctl-actions/setup-flyctl@master
       with:
         node-version: '16'
     - name: npm install
@@ -34,14 +33,15 @@ jobs:
         wait-on: http://localhost:5000
     
   deploy_and_tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [simple_build_pipeline]
     if: ${{ (github.event_name == 'push') && !(contains(join(github.event.commits.*.message), 'skip')) }}
     runs-on: ubuntu-20.04
     permissions:
       write-all
     steps:
     - uses: actions/checkout@v3
-    
+    - uses: superfly/flyctl-actions/setup-flyctl@master
+
     - name: deploy
       run: flyctl deploy --remote-only    
     
